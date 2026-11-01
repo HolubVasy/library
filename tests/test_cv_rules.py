@@ -1,4 +1,5 @@
-"""The CV rules on the seeded documents: which are the owner's CVs, identical texts once, a second run adds nothing."""
+"""The CV rules on the seeded documents: which are the owner's CVs, which the bot made, identical texts once,
+a second run adds nothing."""
 import base64
 import io
 import os
@@ -26,11 +27,11 @@ def run_rules(version):
 def marked(version):
     with psycopg.connect() as db:
         rows = db.execute(
-            """select left(a.sha256, 1), ac.reason from archive.artifact_category ac
+            """select left(a.sha256, 1), c.name, ac.reason from archive.artifact_category ac
                join archive.artifact a on a.id = ac.artifact_id join dict.category c on c.id = ac.category_id
                join archive.method m on m.id = ac.method_id
-               where c.name = 'cv' and m.tool = 'cv-rules' and m.tool_version = %s""", (version,)).fetchall()
-    return sorted(rows)
+               where m.tool = 'cv-rules' and m.tool_version = %s""", (version,)).fetchall()
+    return {doc: (category, reason) for doc, category, reason in rows}
 
 
 @pytest.fixture(scope='module')
@@ -40,16 +41,18 @@ def summary():
 
 @pytest.fixture(scope='module')
 def by_doc(summary):
-    return dict(marked('test'))
+    return marked('test')
 
 
-@pytest.mark.parametrize('doc, rule', [
-    ('n', 'R1'),   # CV word and the owner in the name
-    ('o', 'R1'),   # a copy of n
-    ('q', 'R2'),   # the owner and a role in the name, experience in the text
+@pytest.mark.parametrize('doc, category, rule', [
+    ('n', 'cv', 'R1'),             # CV word and the owner in the name
+    ('o', 'cv', 'R1'),             # a copy of n
+    ('q', 'cv', 'R2'),             # the owner and a role in the name, experience in the text
+    ('w', 'cv', 'R1'),             # named like the bot's, but older than the bot
+    ('v', 'cv_generated', 'R0'),   # a PDF the bot made for a vacancy
 ])
-def test_owner_cv_is_found(by_doc, doc, rule):
-    assert by_doc.get(doc, '').startswith(rule)
+def test_owner_cv_is_found(by_doc, doc, category, rule):
+    assert by_doc[doc][0] == category and by_doc[doc][1].startswith(rule)
 
 
 @pytest.mark.parametrize('doc', ['p', 'r', 't', 'i', 'u'])   # someone else's CV, a cover letter, a letter, a plain
@@ -59,12 +62,12 @@ def test_not_a_cv(by_doc, doc):
 
 
 def test_identical_texts_count_once(summary):
-    assert summary == '3|2'   # three CVs, n and o share one text
+    assert summary.splitlines() == ['cv|4|3', 'cv_generated|1|1']   # n and o share one text
 
 
 def test_second_run_adds_nothing(by_doc):
     run_rules('test')
-    assert dict(marked('test')) == by_doc
+    assert marked('test') == by_doc
 
 
 def test_method_keeps_its_code(summary):
