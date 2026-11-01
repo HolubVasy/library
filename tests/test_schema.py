@@ -22,10 +22,19 @@ def test_every_key_is_bigint():
     assert bad == []
 
 
+def test_annotation_is_shaped_like_content():
+    with psycopg.connect() as db:
+        cols = {r[0] for r in db.execute("""select column_name from information_schema.columns
+                                            where table_schema = 'archive' and table_name = 'annotation'""")}
+    assert {'artifact_id', 'method_id', 'text', 'selected'} <= cols
+
+
 @pytest.mark.parametrize('sql', [
     'delete from archive.content',
     'delete from archive.artifact_tag',
     'update archive.content set body = null',
+    'delete from archive.annotation',
+    'update archive.annotation set text = \'x\'',
     'insert into dict.category (name) values (\'x\')',
 ])
 def test_code_role_cannot_rewrite(sql):

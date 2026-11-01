@@ -24,6 +24,7 @@ Library: the cold archive of everything collected, the hot working selection and
 - Every PR with code carries tests for the criteria of its story; CI runs them on an empty Postgres after all migrations.
 - Test data is made up and lives in `tests/seed.sql`; real archive data never goes into tests.
 - A model call is replaced by a stub in tests; the quality of a model's output is checked live by the owner after the merge.
+- The agent merges its own PR (squash, delete the branch) only when CI is green and the Claude review says 0 findings; otherwise it fixes and waits for the next round, and after three rounds asks the owner.
 
 ## Infrastructure
 - Secrets live only on the VPS (`.env` files there), never on this PC or in the repository. The one exception is `ANTHROPIC_API_KEY` for the PR review, kept in GitHub's encrypted Actions secrets.

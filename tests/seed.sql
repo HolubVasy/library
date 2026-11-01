@@ -27,3 +27,25 @@ from letter l join archive.artifact a on a.sha256 = repeat(l.k, 64);
 insert into archive.meta (artifact_id, method_id, title, data)
 select a.id, (select id from archive.method where tool = 'extract-msg'), 'Letter ' || l.k, jsonb_build_object('From', 'Someone <' || l.sender || '>')
 from letter l join archive.artifact a on a.sha256 = repeat(l.k, 64);
+
+-- Documents next to the letters, and the selected text of both, for the annotation sample.
+create temp table document (k text, ext text);
+insert into document values ('i', 'pdf'), ('j', 'pdf'), ('k', 'docx'), ('l', 'xlsx'), ('m', 'pdf');
+
+insert into archive.artifact (sha256, size_bytes) select repeat(k, 64), 100 from document;
+
+insert into archive.item (artifact_id, location, name, ext, size_bytes, source_id, item_type_id)
+select a.id, format('Documents/%s.%s', d.k, d.ext), d.k || '.' || d.ext, d.ext, 100,
+       (select min(id) from dict.source), (select id from dict.item_type where name = 'Документ')
+from document d join archive.artifact a on a.sha256 = repeat(d.k, 64);
+
+insert into archive.content (artifact_id, method_id, outcome_id, body, selected)
+select a.id, (select id from archive.method where tool = 'extract-msg'),
+       (select id from dict.outcome where name = case when k = 'h' then 'Ошибка' else 'Вынуто' end),
+       case when k <> 'h' then 'Made-up text of ' || k end, true   -- h: the tool failed, no text
+from archive.artifact a cross join lateral (select left(a.sha256, 1) k) s
+where k in ('a', 'b', 'c', 'd', 'e', 'f', 'h', 'i', 'j', 'k', 'l', 'm');   -- g has no text yet
+
+insert into archive.artifact_tag (artifact_id, tag_id, reason)
+select a.id, (select id from dict.tag where name = 'skip'), 'test'
+from archive.artifact a where left(a.sha256, 1) in ('a', 'm');
