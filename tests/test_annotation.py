@@ -45,7 +45,7 @@ def test_sample_mixes_letters_and_documents_of_different_kinds(sample):
 def test_sample_takes_only_selected_text_without_skip(sample):
     run('claude-test-all', 50)
     keys = {k for k, _, _, _ in annotated('claude-test-all')}
-    assert keys == set('bcdefijklnopqrtuvw')   # a, m skipped; h failed extraction; g has no text
+    assert keys == set('bcdefijklnopqrtuvwxy')   # a, m skipped; h failed extraction; g has no text
 
 
 def test_annotation_is_the_model_text_and_selected(sample):

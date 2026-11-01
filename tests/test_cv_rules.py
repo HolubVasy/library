@@ -50,6 +50,8 @@ def by_doc(summary):
     ('q', 'cv', 'R2'),             # the owner and a role in the name, experience in the text
     ('w', 'cv', 'R1'),             # named like the bot's, but older than the bot
     ('v', 'cv_generated', 'R0'),   # a PDF the bot made for a vacancy
+    ('x', 'cv_generated', 'R0'),   # the same, sent back from an address with underscores
+    ('y', 'cv_generated', 'R0'),   # named by the owner as the bot's
 ])
 def test_owner_cv_is_found(by_doc, doc, category, rule):
     assert by_doc[doc][0] == category and by_doc[doc][1].startswith(rule)
@@ -62,7 +64,7 @@ def test_not_a_cv(by_doc, doc):
 
 
 def test_identical_texts_count_once(summary):
-    assert summary.splitlines() == ['cv|4|3', 'cv_generated|1|1']   # n and o share one text
+    assert summary.splitlines() == ['cv|4|3', 'cv_generated|3|3']   # n and o share one text
 
 
 def test_second_run_adds_nothing(by_doc):
