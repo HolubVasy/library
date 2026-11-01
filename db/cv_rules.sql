@@ -15,7 +15,7 @@
 \set not_cv 'cover|letter|offer|курсов'
 \set bot_name '^[0-9]{4}-[0-9]{2}-[0-9]{2}_[^@]+@[^_]+_(CV_Vasili_Holub_|Vasili[ _]Holub[ _])'
 \set bot_since '2026-03-01'
-\set bot_files '(^|_)CV_(Globaldots|Td_Synnex|Itds)_|CV_Vasili_Holub_LTIMindtree_[.]NET_Software_Engineer[.]docx|CV_Vasili_Holub_Senior Application Support'
+\set bot_files '(^|_)(CV_Globaldots_Platform_Engineer[.]pdf|CV_Td_Synnex_Poland_Dotnet_Developer[.]pdf|CV_Itds_Solutions_Architect[.]pdf|CV_Vasili_Holub_LTIMindtree_[.]NET_Software_Engineer[.]docx|CV_Vasili_Holub_Senior Application Support Engineer – ASP[.]NET MVC Framework with[.]docx)$'
 
 insert into method (tech_step_id, escalation_step_id, platform_id, platform_version, tool, tool_version, formats, description, code)
 select (select id from dict.tech_step where name = 'Детерминированная'), (select id from dict.escalation_step where name = 'Правило'),
