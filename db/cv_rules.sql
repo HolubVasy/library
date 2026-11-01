@@ -6,8 +6,8 @@
 -- Run as archive_app: psql -v code=<this file zipped, base64> -v version=<sha256 of this file, 12 chars> -f cv_rules.sql
 \set ON_ERROR_STOP on
 \set cv_word '(^|[^a-z])(cv|resume)([^a-z]|$)|резюме|życiorys|lebenslauf'
-\set owner_name 'holub|golub|голуб|vasili'
-\set owner_text 'holub|golub|голуб'
+\set owner_name '(^|[^[:alpha:]])(holub|golub|голуб|vasili)([^[:alpha:]]|$)'
+\set owner_text '(^|[^[:alpha:]])(holub|golub|голуб)([^[:alpha:]]|$)'
 \set role '(developer|engineer|architect|разработчик|программист)'
 \set experience 'experience|employment|опыт работы|doświadczenie'
 \set not_cv 'cover|letter|offer|курсов'

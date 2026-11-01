@@ -52,7 +52,8 @@ def test_owner_cv_is_found(by_doc, doc, rule):
     assert by_doc.get(doc, '').startswith(rule)
 
 
-@pytest.mark.parametrize('doc', ['p', 'r', 't', 'i'])   # someone else's CV, a cover letter, a letter, a plain document
+@pytest.mark.parametrize('doc', ['p', 'r', 't', 'i', 'u'])   # someone else's CV, a cover letter, a letter, a plain
+                                                              # document, a surname that only starts like the owner's
 def test_not_a_cv(by_doc, doc):
     assert doc not in by_doc
 

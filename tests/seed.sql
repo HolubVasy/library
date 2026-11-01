@@ -58,7 +58,8 @@ insert into cv values
   ('p', 'Other Person CV.docx', 'docx', 'Made-up CV of someone else. Experience: Sample Inc.'),          -- not the owner
   ('q', 'Vasili_Holub_Senior_Developer.pdf', 'pdf', 'Made-up. Work experience: Example Ltd.'),          -- R2
   ('r', 'Cover_Letter_Vasili_Holub_Developer.pdf', 'pdf', 'Made-up cover letter. My experience: many'), -- never a CV
-  ('t', 'CV Holub.msg', 'msg', 'Made-up letter with a CV attached. Experience inside.');                -- a letter, not a CV
+  ('t', 'CV Holub.msg', 'msg', 'Made-up letter with a CV attached. Experience inside.'),                -- a letter, not a CV
+  ('u', 'CV Vasiliev.docx', 'docx', 'Made-up CV of Petr Golubev. Experience: Sample Inc.');              -- a name that only starts alike
 
 insert into archive.artifact (sha256, size_bytes) select repeat(k, 64), 100 from cv;
 
