@@ -10,8 +10,8 @@ State on 2026-11-01. Update when a story closes.
 | Database | VPS, container `archive_db` (Postgres 17), reached by ssh tunnel; `/root/archive_app/psql.sh` runs psql as `archive_app` |
 | Extractor | VPS `/root/archive_extractor`: `./run.sh format|meta|content|rtf [--kind …]`, `./after.sh` for the whole chain |
 | Code | this repository; on the VPS copies are deployed by `scp` |
-| Docs | Azure DevOps wiki of EvidenceVault (concept, regulation) |
-| Board | dev.azure.com/DigitIn/EvidenceVault |
+| Docs | Azure DevOps wiki of the Library project (concept, regulation) |
+| Board | dev.azure.com/DigitIn/Library |
 
 ## Numbers
 34 378 artifacts; format 34 377, meta 34 339, content 30 450 (the rest are images waiting for OCR). 9 335 letters tagged `skip` (noise and job platforms); in work 9 822 letters and 7 004 documents.

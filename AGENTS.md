@@ -1,6 +1,6 @@
 # Rules for agents
 
-Library: the cold archive of everything collected, the hot working selection and the portfolios made from it. Concept and regulation live in the Azure DevOps wiki of EvidenceVault; the current state is in [HANDOFF.md](HANDOFF.md).
+Library: the cold archive of everything collected, the hot working selection and the portfolios made from it. Concept and regulation live in the Azure DevOps wiki of the Library project; the current state is in [HANDOFF.md](HANDOFF.md).
 
 ## Working with the owner
 - Concept before code: agree a short description and get a go-ahead before writing code or files.
@@ -23,4 +23,4 @@ Library: the cold archive of everything collected, the hot working selection and
 ## Infrastructure
 - Secrets live only on the VPS (`.env` files there), never on this PC or in the repository. The one exception is `ANTHROPIC_API_KEY` for the PR review, kept in GitHub's encrypted Actions secrets.
 - Shell scripts keep LF line endings. Long ssh sessions drop: start long jobs with `nohup … < /dev/null &` and check them with short connections.
-- Board: Azure DevOps DigitIn/EvidenceVault, default Agile process, only for priorities and history. Commit messages carry `AB#<story id>`.
+- Board: Azure DevOps DigitIn/Library, default Agile process, only for priorities and history. Commit messages carry `AB#<story id>`.
