@@ -62,6 +62,23 @@ def test_method_carries_model_version_prompt_and_code(sample):
     assert zipfile.ZipFile(io.BytesIO(code)).namelist() == ['annotate.py']
 
 
+def test_run_after_a_failure_keeps_the_sample_size():
+    calls = []
+
+    def failing(text):
+        calls.append(text)
+        if len(calls) > 2:
+            raise RuntimeError('model is down')
+        return stub(text)
+
+    with psycopg.connect(autocommit=True, **APP) as db:
+        with pytest.raises(RuntimeError):
+            annotate.annotate(db, failing, 'claude-test-partial', 'stub', 6)
+    run('claude-test-partial', 6)
+    exts = [ext for _, ext, _, _ in annotated('claude-test-partial')]
+    assert exts.count('msg') == 3 and len(exts) == 6
+
+
 def test_second_run_adds_nothing(sample):
     assert run('claude-test-1', 6) == []
     assert annotated('claude-test-1') == sample

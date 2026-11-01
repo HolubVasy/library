@@ -2,7 +2,7 @@
 
 Runs on the VPS as archive_app. Takes a fixed sample: artifacts with selected extracted text and without an active
 skip tag, half letters and half documents, documents spread over their extensions, each group in the order of
-md5 of sha256, so every run takes the same artifacts. Writes only archive.annotation, every row signed with its
+md5 of sha256. Each half counts what the method already wrote, so the method never holds more than the sample. Writes only archive.annotation, every row signed with its
 method: model family and version, prompt version, code version, the code itself zipped.
 Re-runnable: an artifact already annotated by this method is skipped. Prints tokens and cost per document.
 
@@ -32,15 +32,22 @@ with pool as (
                     where t.artifact_id = a.id and g.name = 'skip' and t.removed_at is null)
   group by a.id, a.sha256, c.body
 ),
+done as (
+  select d.is_letter, count(*) n from (
+    select bool_or(lower(i.ext) = 'msg') is_letter from archive.annotation x
+    join archive.item i on i.artifact_id = x.artifact_id
+    where x.method_id = %(method)s group by x.artifact_id) d
+  group by d.is_letter
+),
 spread as (
-  select *, row_number() over (partition by is_letter, ext order by md5(sha256)) turn from pool
+  select *, row_number() over (partition by is_letter, ext order by md5(sha256)) turn from pool p
+  where not exists (select 1 from archive.annotation x where x.artifact_id = p.id and x.method_id = %(method)s)
 ),
 ranked as (
   select *, row_number() over (partition by is_letter order by turn, md5(sha256)) n from spread
 )
-select r.id, r.body from ranked r
-where r.n <= case when r.is_letter then %(letters)s else %(documents)s end
-  and not exists (select 1 from archive.annotation x where x.artifact_id = r.id and x.method_id = %(method)s)
+select r.id, r.body from ranked r left join done d on d.is_letter = r.is_letter
+where r.n <= case when r.is_letter then %(letters)s else %(documents)s end - coalesce(d.n, 0)
 order by r.is_letter, r.n
 '''
 
