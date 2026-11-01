@@ -11,6 +11,11 @@ permissions:
   pull-requests: write
   id-token: write
 
+# a new push cancels the review still running for the same PR, so comments are not posted twice
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   review:
     if: github.event.pull_request.draft == false
