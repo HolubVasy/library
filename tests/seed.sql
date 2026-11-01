@@ -49,3 +49,26 @@ where k in ('a', 'b', 'c', 'd', 'e', 'f', 'h', 'i', 'j', 'k', 'l', 'm');   -- g 
 insert into archive.artifact_tag (artifact_id, tag_id, reason)
 select a.id, (select id from dict.tag where name = 'skip'), 'test'
 from archive.artifact a where left(a.sha256, 1) in ('a', 'm');
+
+-- Candidates for the CV rules: the owner's CVs, a copy with the same text, someone else's CV, a cover letter.
+create temp table cv (k text, name text, ext text, body text);
+insert into cv values
+  ('n', 'CV Holub 2020.docx', 'docx', 'Made-up CV. Experience: Example Ltd, developer, 2018-2020.'),      -- R1
+  ('o', 'CV Holub copy.pdf', 'pdf', 'Made-up CV. Experience: Example Ltd, developer, 2018-2020.'),       -- R1, same text as n
+  ('p', 'Other Person CV.docx', 'docx', 'Made-up CV of someone else. Experience: Sample Inc.'),          -- not the owner
+  ('q', 'Vasili_Holub_Senior_Developer.pdf', 'pdf', 'Made-up. Work experience: Example Ltd.'),          -- R2
+  ('r', 'Cover_Letter_Vasili_Holub_Developer.pdf', 'pdf', 'Made-up cover letter. My experience: many'), -- never a CV
+  ('t', 'CV Holub.msg', 'msg', 'Made-up letter with a CV attached. Experience inside.'),                -- a letter, not a CV
+  ('u', 'CV Vasiliev.docx', 'docx', 'Made-up CV of Petr Golubev. Experience: Sample Inc.');              -- a name that only starts alike
+
+insert into archive.artifact (sha256, size_bytes) select repeat(k, 64), 100 from cv;
+
+insert into archive.item (artifact_id, location, name, ext, size_bytes, source_id, item_type_id)
+select a.id, 'Documents/' || c.name, c.name, c.ext, 100, (select min(id) from dict.source),
+       (select id from dict.item_type where name = case when c.ext = 'msg' then 'Письмо' else 'Документ' end)
+from cv c join archive.artifact a on a.sha256 = repeat(c.k, 64);
+
+insert into archive.content (artifact_id, method_id, outcome_id, body, body_hash, selected)
+select a.id, (select id from archive.method where tool = 'extract-msg'), (select id from dict.outcome where name = 'Вынуто'),
+       c.body, md5(c.body), true
+from cv c join archive.artifact a on a.sha256 = repeat(c.k, 64);
