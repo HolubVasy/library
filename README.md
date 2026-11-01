@@ -1,4 +1,4 @@
-# evidence-vault
+# buro
 
 A personal archive seen through the lens of a career. Everything is collected without judging it, kept encrypted on a VPS by hash, read, and then narrowed down step by step to what matters for the career.
 
