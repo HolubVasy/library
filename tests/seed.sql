@@ -59,7 +59,11 @@ insert into cv values
   ('q', 'Vasili_Holub_Senior_Developer.pdf', 'pdf', 'Made-up. Work experience: Example Ltd.'),          -- R2
   ('r', 'Cover_Letter_Vasili_Holub_Developer.pdf', 'pdf', 'Made-up cover letter. My experience: many'), -- never a CV
   ('t', 'CV Holub.msg', 'msg', 'Made-up letter with a CV attached. Experience inside.'),                -- a letter, not a CV
-  ('u', 'CV Vasiliev.docx', 'docx', 'Made-up CV of Petr Golubev. Experience: Sample Inc.');              -- a name that only starts alike
+  ('u', 'CV Vasiliev.docx', 'docx', 'Made-up CV of Petr Golubev. Experience: Sample Inc.'),             -- a name that only starts alike
+  ('v', '2026-04-01_owner@example.com_CV_Vasili_Holub_Example_Developer.pdf', 'pdf',
+        'Made-up CV for a vacancy. Experience: Example Ltd.'),                                         -- made by the bot
+  ('w', '2025-04-01_owner@example.com_CV_Vasili_Holub_Example_Developer.pdf', 'pdf',
+        'Made-up older CV. Experience: Example Ltd.');                                                 -- before the bot
 
 insert into archive.artifact (sha256, size_bytes) select repeat(k, 64), 100 from cv;
 
