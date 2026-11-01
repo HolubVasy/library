@@ -19,6 +19,7 @@ PROMPT = ('Ты читаешь документ из личного архива
           'Только эти предложения, без вступления, списков и оценок. Не добавляй того, чего нет в тексте.')
 MAX_CHARS = 20_000                 # the start of a long text is enough to say what it is about
 MAX_TOKENS = 300
+PILOT_SIZE = 50                    # the owner's exception for sensitive documents covers only the pilot (story 238)
 SCRIPT = os.path.abspath(__file__)
 SCRIPT_VERSION = hashlib.sha256(open(SCRIPT, 'rb').read()).hexdigest()[:12]
 
@@ -95,6 +96,8 @@ def save(db, artifact_id, method_id, text):
 def annotate(db, ask, model, sdk_version, size):
     """Annotates the sample with ask(text) -> (annotation, input tokens, output tokens).
     Returns [(artifact id, input tokens, output tokens)] of what was written in this run."""
+    if not 0 < size <= PILOT_SIZE:
+        raise ValueError(f'sample size {size} is outside the pilot, 1 to {PILOT_SIZE}')
     method_id = method(db, model, sdk_version)
     done = []
     for artifact_id, body in sample(db, method_id, size):
