@@ -18,7 +18,7 @@ PROMPT = ('Ты читаешь документ из личного архива
           'Напиши по-русски два или три предложения о том, что это за документ и о чём он. '
           'Только эти предложения, без вступления, списков и оценок. Не добавляй того, чего нет в тексте.')
 MAX_CHARS = 20_000                 # the start of a long text is enough to say what it is about
-MAX_TOKENS = 300
+MAX_TOKENS = 2000                  # the model thinks first, and its thinking counts against this limit
 SCRIPT = os.path.abspath(__file__)
 SCRIPT_VERSION = hashlib.sha256(open(SCRIPT, 'rb').read()).hexdigest()[:12]
 
