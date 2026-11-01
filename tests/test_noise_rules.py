@@ -29,13 +29,18 @@ def categories(version):
                join archive.artifact a on a.id = ac.artifact_id join dict.category c on c.id = ac.category_id
                join archive.method m on m.id = ac.method_id where m.tool = 'noise-rules' and m.tool_version = %s""",
             (version,)).fetchall()
-    return dict(rows)
+    return sorted(rows)   # every row, so a second run that adds one is seen
 
 
 @pytest.fixture(scope='module')
 def marks():
     run_rules('test')
     return categories('test')
+
+
+@pytest.fixture(scope='module')
+def by_letter(marks):
+    return dict(marks)
 
 
 @pytest.mark.parametrize('letter, category', [
@@ -46,13 +51,13 @@ def marks():
     ('g', 'spam'),           # spam domain
     ('h', 'job_platform'),   # automated letter of a career platform is not noise
 ])
-def test_category(marks, letter, category):
-    assert marks.get(letter) == category
+def test_category(by_letter, letter, category):
+    assert by_letter.get(letter) == category
 
 
 @pytest.mark.parametrize('letter', ['d', 'f'])   # own address; a live person on a career domain
-def test_left_alone(marks, letter):
-    assert letter not in marks
+def test_left_alone(by_letter, letter):
+    assert letter not in by_letter
 
 
 def test_second_run_adds_nothing(marks):
