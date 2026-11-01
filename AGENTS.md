@@ -30,3 +30,4 @@ Library: the cold archive of everything collected, the hot working selection and
 - Secrets live only on the VPS (`.env` files there), never on this PC or in the repository. The one exception is `ANTHROPIC_API_KEY` for the PR review, kept in GitHub's encrypted Actions secrets.
 - Shell scripts keep LF line endings. Long ssh sessions drop: start long jobs with `nohup … < /dev/null &` and check them with short connections.
 - Board: Azure DevOps DigitIn/Library, default Agile process, only for priorities and history. Commit messages carry `AB#<story id>`.
+- The agent works from the board: it reads the story and its acceptance criteria there, sets the story Active when it starts, Resolved after the merge with a one-line comment (PR link and result), and the owner closes it after the live check.
