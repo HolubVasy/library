@@ -1,6 +1,6 @@
 # library
 
-A personal archive seen through the lens of a career. Everything is collected without judging it, kept encrypted on a VPS by hash, read, and then narrowed down step by step to what matters for the career.
+A personal library: the cold archive of everything collected, the hot working selection, and the portfolios made from it. Everything is collected without judging it, kept encrypted on a VPS by hash, read, and then narrowed down step by step to what matters for the career.
 
 The rules behind the code are in [docs/](docs/Картотека_доказательств_концепция.md).
 

@@ -1,6 +1,6 @@
 # Rules for agents
 
-The archive of a career: everything collected, stored by hash, read and narrowed down to what matters. Concept and regulation live in the Azure DevOps wiki of EvidenceVault; the current state is in [HANDOFF.md](HANDOFF.md).
+Library: the cold archive of everything collected, the hot working selection and the portfolios made from it. Concept and regulation live in the Azure DevOps wiki of EvidenceVault; the current state is in [HANDOFF.md](HANDOFF.md).
 
 ## Working with the owner
 - Concept before code: agree a short description and get a go-ahead before writing code or files.
