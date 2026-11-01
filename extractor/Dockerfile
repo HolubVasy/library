@@ -18,6 +18,6 @@ COPY --from=rclone/rclone:1.68.2 /usr/local/bin/rclone /usr/local/bin/rclone
 
 RUN pip install --no-cache-dir extract-msg==0.55.0 "psycopg[binary]==3.2.10" charset-normalizer==3.4.3
 
-COPY extract.py /app/extract.py
+COPY extract.py readers.py /app/
 WORKDIR /work
 ENTRYPOINT ["python", "/app/extract.py"]

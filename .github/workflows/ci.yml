@@ -1,0 +1,40 @@
+# Every pull request: all migrations on an empty Postgres, a few made-up rows, the tests.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: archive
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: archive
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U archive -d archive"
+          --health-interval 2s --health-timeout 5s --health-retries 30
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGDATABASE: archive
+      PGUSER: archive
+      PGPASSWORD: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pytest "psycopg[binary]==3.2.10"
+      - name: Migrations
+        run: sh tests/migrate.sh
+      - name: Test data
+        run: psql -X -q -v ON_ERROR_STOP=1 -f tests/seed.sql
+      - name: Tests
+        run: pytest -q tests
