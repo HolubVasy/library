@@ -37,7 +37,7 @@ jobs:
             Look for, in this order:
             1. Breaks of the data rules: anything that overwrites or deletes earlier results instead of adding on top,
                a changed tool or code that is not a new method, a pass writing to a table that is not its own,
-               sensitive data stored as content, secrets in the repository.
+               secrets in the repository.
             2. Correctness bugs: wrong SQL, lost rows, wrong encoding, broken idempotency of a re-runnable step.
             3. Names and schemas that do not follow AGENTS.md.
             Report only real findings, each as an inline comment on the line, short, with what is wrong and what to do.
