@@ -63,7 +63,11 @@ insert into cv values
   ('v', '2026-04-01_owner@example.com_CV_Vasili_Holub_Example_Developer.pdf', 'pdf',
         'Made-up CV for a vacancy. Experience: Example Ltd.'),                                         -- made by the bot
   ('w', '2025-04-01_owner@example.com_CV_Vasili_Holub_Example_Developer.pdf', 'pdf',
-        'Made-up older CV. Experience: Example Ltd.');                                                 -- before the bot
+        'Made-up older CV. Experience: Example Ltd.'),                                                 -- before the bot
+  ('x', '2026-04-02_rc_PL_X@example.com_CV_Vasili_Holub_Example_Developer.pdf', 'pdf',
+        'Made-up CV sent back by a recruiter. Experience: Example Ltd.'),                              -- the bot's, via an address with _
+  ('y', '2026-05-01_owner@example.com_CV_Td_Synnex_Poland_Dotnet_Developer.pdf', 'pdf',
+        'Made-up CV of Vasili Holub for a vacancy. Experience: Example Ltd.');                         -- the bot's, named by the owner
 
 insert into archive.artifact (sha256, size_bytes) select repeat(k, 64), 100 from cv;
 
