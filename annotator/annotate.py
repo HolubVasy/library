@@ -107,6 +107,8 @@ def claude(model):
     def ask(text):
         r = client.messages.create(model=model, max_tokens=MAX_TOKENS, system=PROMPT,
                                    messages=[{'role': 'user', 'content': text}])
+        if r.stop_reason != 'end_turn':
+            raise RuntimeError(f'the model stopped with {r.stop_reason}, the annotation would be cut')
         answer = ''.join(b.text for b in r.content if b.type == 'text')
         return answer, r.usage.input_tokens, r.usage.output_tokens
     return ask, anthropic.__version__
