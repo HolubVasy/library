@@ -21,6 +21,6 @@ The archive of a career: everything collected, stored by hash, read and narrowed
 - Migrations are `db/NNN_*.sql`, applied in order as the admin role; code runs as `archive_app`.
 
 ## Infrastructure
-- Secrets live only on the VPS (`.env` files there), never on this PC or in the repository.
+- Secrets live only on the VPS (`.env` files there), never on this PC or in the repository. The one exception is `ANTHROPIC_API_KEY` for the PR review, kept in GitHub's encrypted Actions secrets.
 - Shell scripts keep LF line endings. Long ssh sessions drop: start long jobs with `nohup … < /dev/null &` and check them with short connections.
 - Board: Azure DevOps DigitIn/EvidenceVault, default Agile process, only for priorities and history. Commit messages carry `AB#<story id>`.
