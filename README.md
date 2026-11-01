@@ -7,6 +7,7 @@ The rules behind the code are in [docs/](docs/Картотека_доказат�
 ## Layout
 - `db/` — migrations (`NNN_*.sql`, applied in order as the admin role), sync of the cold archive, search, noise rules.
 - `extractor/` — the container on the VPS that reads artifacts: format, meta, content.
+- `tests/` — tests run by CI on every pull request; `seed.sql` holds the made-up test data.
 - `upload_cold.ps1`, `setup_cold_crypt.ps1` — entry points on the PC.
 
 ## Commands
@@ -16,6 +17,9 @@ python -I db/unpack_cold.py [--dry-run]    # unpack archives next to themselves,
 python -I db/find_file.py <words> [--get N]
 ```
 On the VPS, in `/root/archive_extractor`: `./run.sh format|meta|content|rtf [--kind …]`, or `./after.sh` for the whole chain.
+
+## Tests
+On every pull request GitHub starts an empty Postgres, applies every migration (`tests/migrate.sh`), loads `tests/seed.sql` and runs `pytest tests`. Locally the same works against any empty Postgres with the `PG*` variables set. Then Claude reviews the PR against `AGENTS.md`.
 
 ## Database
 Postgres, three schemas: `archive` (the library), `dict` (dictionaries), `career` (the working extract). Nothing is overwritten: every processing adds its rows next to the earlier ones, signed with its method.
