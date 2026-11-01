@@ -1,0 +1,7 @@
+# data about the archive's files stays out of the repository: names, paths, logs
+*.csv
+*.log
+_upload_staging/
+
+__pycache__/
+*.pyc
