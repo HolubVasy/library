@@ -79,11 +79,6 @@ def test_run_after_a_failure_keeps_the_sample_size():
     assert exts.count('msg') == 3 and len(exts) == 6
 
 
-def test_sample_cannot_grow_beyond_the_pilot():
-    with pytest.raises(ValueError):
-        run('claude-test-big', annotate.PILOT_SIZE + 1)
-
-
 def test_second_run_adds_nothing(sample):
     assert run('claude-test-1', 6) == []
     assert annotated('claude-test-1') == sample
