@@ -13,7 +13,7 @@ Library: the cold archive of everything collected, the hot working selection and
 - Another tool, another setting, another line of code is a new method (`archive.method`), with its code zipped into `method.code`.
 - One pass, one table: the meta pass writes only `meta`, the content pass only `content`. Meta is about the document (title, author, date, from/to), content is what is written in it.
 - Categories are verdicts of methods (`artifact_category`); tags are our working decisions (`artifact_tag`), taken off with a date and a reason, never deleted.
-- Sensitive data (identity documents, medicine, finances, family, third parties) is kept only as a reference, never as content.
+- Sensitive data (identity documents, medicine, finances, family, third parties) is kept only as a reference, never as content. Exception by the owner's decision: the annotation pilot (story 238) takes sensitive documents too, and the owner reviews every annotation it writes.
 
 ## Database
 - Schemas: `archive` (library), `dict` (shared dictionaries, no prefix), `career` (working extract). Every key is `bigint`.
