@@ -25,8 +25,9 @@ def stub(text):
 
 
 def run(model, ask):
+    """The texts read by the model in this run; copies linked without it are left out."""
     with psycopg.connect(autocommit=True, **APP) as db:
-        return read_cv.read(db, ask, model, 'stub')
+        return read_cv.read(db, ask, model, 'stub')[0]
 
 
 def records(model):
@@ -94,3 +95,30 @@ def test_second_run_adds_nothing(read):
     _, rows = read
     assert run('claude-sonnet-9-1', stub) == []
     assert records('claude-sonnet-9-1') == rows
+
+
+def never(text):
+    raise AssertionError('a text already read must not go to the model again')
+
+
+def test_a_later_copy_of_a_read_text_is_linked_without_the_model(read):
+    _, rows = read
+    with psycopg.connect(autocommit=True) as db:   # z: a copy of n's text that reaches the archive after the run
+        db.execute("insert into archive.artifact (sha256, size_bytes) values (repeat('z', 64), 100)")
+        db.execute("""insert into archive.content (artifact_id, method_id, outcome_id, body, body_hash, selected)
+                      select (select id from archive.artifact where sha256 = repeat('z', 64)),
+                             c.method_id, c.outcome_id, c.body, c.body_hash, true
+                      from archive.content c join archive.artifact a on a.id = c.artifact_id
+                      where a.sha256 = repeat('n', 64) and c.selected""")
+        db.execute("""insert into archive.artifact_category (artifact_id, category_id, method_id, reason)
+                      select (select id from archive.artifact where sha256 = repeat('z', 64)),
+                             ac.category_id, ac.method_id, ac.reason
+                      from archive.artifact_category ac join archive.artifact a on a.id = ac.artifact_id
+                      where a.sha256 = repeat('n', 64)
+                        and ac.method_id = (select max(id) from archive.method where tool = 'cv-rules')""")
+    with psycopg.connect(autocommit=True, **APP) as db:
+        done, linked = read_cv.read(db, never, 'claude-sonnet-9-1', 'stub')
+    after = records('claude-sonnet-9-1')
+    assert done == [] and linked == 1
+    assert [row[1:] for row in after if row[0] == 'z'] == [row[1:] for row in rows if row[0] == 'n']
+    assert [row for row in after if row[0] != 'z'] == rows   # the records themselves are not added again

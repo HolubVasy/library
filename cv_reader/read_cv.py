@@ -4,7 +4,8 @@ Runs on the VPS as archive_app. Takes the artifacts the latest CV rules marked c
 content.body_hash, so a copy is read once. For each role the model gives organization, country, position, start and
 end; the pass adds career.record rows signed with its method and links each to every artifact holding that text.
 Organizations and countries join their dictionaries on first use. Re-runnable: a text already read by this method
-is skipped. Prints tokens and cost per text.
+is not read again, and a copy of it that reached the archive later is linked to its records without the model.
+Prints tokens and cost per text and the number of copies linked.
 
 Usage: read_cv.py --model claude-sonnet-5-5 --price-in USD --price-out USD   (prices per million tokens)
 """
@@ -36,6 +37,28 @@ where not exists (select 1 from career.record r join career.record_artifact ra o
                   join cv done on done.artifact_id = ra.artifact_id
                   where r.method_id = %(method)s and done.body_hash = cv.body_hash)
 group by cv.body_hash order by min(cv.artifact_id)
+'''
+
+# A text already read has records of this method linked to some of its copies; every copy not yet linked to such a
+# record gets the link. Only additions: no record is written again and no model is asked.
+LATER_COPIES = '''
+with rules as (select max(id) id from archive.method where tool = 'cv-rules'),
+cv as (
+  select c.body_hash, ac.artifact_id from archive.artifact_category ac
+  join dict.category g on g.id = ac.category_id and g.name = 'cv'
+  join archive.content c on c.artifact_id = ac.artifact_id and c.selected and c.body_hash is not null
+  where ac.method_id = (select id from rules)
+),
+read_text as (
+  select distinct cv.body_hash, ra.record_id from career.record r
+  join career.record_artifact ra on ra.record_id = r.id
+  join cv on cv.artifact_id = ra.artifact_id
+  where r.method_id = %(method)s
+)
+insert into career.record_artifact (record_id, artifact_id)
+select rt.record_id, cv.artifact_id from read_text rt join cv on cv.body_hash = rt.body_hash
+where not exists (select 1 from career.record_artifact x where x.record_id = rt.record_id and x.artifact_id = cv.artifact_id)
+returning artifact_id
 '''
 
 
@@ -122,9 +145,13 @@ def save(db, method_id, role, artifact_ids):
 
 
 def read(db, ask, model, sdk_version):
-    """Reads every CV text not yet read with ask(text) -> (answer, input tokens, output tokens).
-    Returns [(body hash, roles, input tokens, output tokens)] of what was written in this run."""
+    """Links the later copies of texts already read, then reads every CV text not yet read with
+    ask(text) -> (answer, input tokens, output tokens).
+    Returns ([(body hash, roles, input tokens, output tokens)] of what the model read in this run,
+    the number of copies linked without the model)."""
     method_id = method(db, model, sdk_version)
+    with db.transaction():
+        linked = len({row[0] for row in db.execute(LATER_COPIES, {'method': method_id}).fetchall()})
     done = []
     for body_hash, body, artifact_ids in db.execute(TEXTS, {'method': method_id}).fetchall():
         answer, tokens_in, tokens_out = ask(body)
@@ -133,7 +160,7 @@ def read(db, ask, model, sdk_version):
             for role in roles:
                 save(db, method_id, role, artifact_ids)
         done.append((body_hash, len(roles), tokens_in, tokens_out))
-    return done
+    return done, linked
 
 
 def claude(model):
@@ -151,7 +178,8 @@ def claude(model):
     return ask, anthropic.__version__
 
 
-def report(done, price_in, price_out):
+def report(done, linked, price_in, price_out):
+    print(f'cv: {linked} later copies linked to texts already read, without the model', flush=True)
     total = 0.0
     for body_hash, roles, tokens_in, tokens_out in done:
         cost = (tokens_in * price_in + tokens_out * price_out) / 1_000_000
@@ -170,8 +198,8 @@ def main():
     args = ap.parse_args()
     ask, sdk_version = claude(args.model)
     with psycopg.connect(autocommit=True) as db:
-        done = read(db, ask, args.model, sdk_version)
-    report(done, args.price_in, args.price_out)
+        done, linked = read(db, ask, args.model, sdk_version)
+    report(done, linked, args.price_in, args.price_out)
 
 
 if __name__ == '__main__':
