@@ -35,6 +35,8 @@ def test_annotation_is_shaped_like_content():
     'update archive.content set body = null',
     'delete from archive.annotation',
     'update archive.annotation set text = \'x\'',
+    'delete from career.record',
+    'update career.record set position = \'x\'',
     'insert into dict.category (name) values (\'x\')',
 ])
 def test_code_role_cannot_rewrite(sql):
