@@ -1,5 +1,5 @@
 # Every pull request is reviewed by Claude against AGENTS.md; findings come back as review comments.
-# Needs the repository secret ANTHROPIC_API_KEY.
+# Needs the repository secret CLAUDE_CODE_OAUTH_TOKEN, made by `claude setup-token` on the owner's Max subscription.
 name: Claude review
 
 on:
@@ -27,7 +27,7 @@ jobs:
 
       - uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             REPO: ${{ github.repository }}
