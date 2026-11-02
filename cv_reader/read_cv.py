@@ -83,28 +83,40 @@ def parse_roles(answer):
     roles = json.loads(text)
     if not isinstance(roles, list) or not roles:
         raise ValueError(f'expected a non-empty JSON array of roles, got: {answer[:200]!r}')
-    return [{'organization': str(r['organization']).strip(), 'country': (r.get('country') or '').strip() or None,
-             'position': str(r['position']).strip(), 'start': parse_date(r.get('start')),
+    return [{'organization': required(r, 'organization'), 'country': (r.get('country') or '').strip() or None,
+             'position': required(r, 'position'), 'start': parse_date(r.get('start')),
              'end': parse_date(r.get('end'))} for r in roles]
 
 
-def dict_id(db, table, name, country_id=None):
-    """Id of the name in a dictionary; added on first use (checked first: a conflict would still take a number)."""
-    found = db.execute(f'select id from dict.{table} where name = %s', (name,)).fetchone()
-    if found:
-        return found[0]
-    if table == 'organization':
-        return db.execute('insert into dict.organization (name, country_id) values (%s, %s) returning id',
-                          (name, country_id)).fetchone()[0]
-    return db.execute(f'insert into dict.{table} (name) values (%s) returning id', (name,)).fetchone()[0]
+def required(role, key):
+    value = role.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f'a role without {key}: {role!r}')
+    return value.strip()
+
+
+def country_id(db, name):
+    """Id of the country; added on first use (checked first: a conflict would still take a number)."""
+    found = db.execute('select id from dict.country where name = %s', (name,)).fetchone()
+    return found[0] if found else \
+        db.execute('insert into dict.country (name) values (%s) returning id', (name,)).fetchone()[0]
+
+
+def organization_id(db, name, country):
+    """Id of the organization with this name in this country; added on first use."""
+    found = db.execute('select id from dict.organization where name = %s and country_id is not distinct from %s',
+                       (name, country)).fetchone()
+    return found[0] if found else \
+        db.execute('insert into dict.organization (name, country_id) values (%s, %s) returning id',
+                   (name, country)).fetchone()[0]
 
 
 def save(db, method_id, role, artifact_ids):
-    country_id = dict_id(db, 'country', role['country']) if role['country'] else None
-    organization_id = dict_id(db, 'organization', role['organization'], country_id)
+    country = country_id(db, role['country']) if role['country'] else None
+    organization = organization_id(db, role['organization'], country)
     record_id = db.execute('''insert into career.record (organization_id, position, start_date, end_date, method_id)
                               values (%s, %s, %s, %s, %s) returning id''',
-                           (organization_id, role['position'], role['start'], role['end'], method_id)).fetchone()[0]
+                           (organization, role['position'], role['start'], role['end'], method_id)).fetchone()[0]
     for artifact_id in artifact_ids:
         db.execute('insert into career.record_artifact (record_id, artifact_id) values (%s, %s)', (record_id, artifact_id))
 

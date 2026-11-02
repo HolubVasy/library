@@ -42,8 +42,8 @@ def records(model):
 @pytest.fixture(scope='module')
 def read():
     run_rules('test')
-    done = run('claude-sonnet-test', stub)
-    return done, records('claude-sonnet-test')
+    done = run('claude-sonnet-9-1', stub)
+    return done, records('claude-sonnet-9-1')
 
 
 def test_each_text_is_read_once(read):
@@ -72,18 +72,25 @@ def test_method_carries_model_prompt_and_code(read):
         tool, step, description = db.execute(
             """select m.tool, s.name, m.description from archive.method m
                join dict.escalation_step s on s.id = m.escalation_step_id
-               where m.tool_version = 'claude-sonnet-test'""").fetchone()
+               where m.tool_version = 'claude-sonnet-9-1'""").fetchone()
     assert (tool, step) == ('claude-sonnet', 'Средний уровень')
     assert f'промпт {read_cv.PROMPT_VERSION}' in description
 
 
 def test_answer_that_is_not_roles_stops_and_writes_nothing():
     with pytest.raises(ValueError):
-        run('claude-sonnet-broken', lambda text: ('[]', 1, 1))
-    assert records('claude-sonnet-broken') == []
+        run('claude-sonnet-9-2', lambda text: ('[]', 1, 1))
+    assert records('claude-sonnet-9-2') == []
+
+
+def test_role_without_position_stops_and_writes_nothing():
+    answer = json.dumps([{**ROLES[0], 'position': None}])
+    with pytest.raises(ValueError):
+        run('claude-sonnet-9-3', lambda text: (answer, 1, 1))
+    assert records('claude-sonnet-9-3') == []
 
 
 def test_second_run_adds_nothing(read):
     _, rows = read
-    assert run('claude-sonnet-test', stub) == []
-    assert records('claude-sonnet-test') == rows
+    assert run('claude-sonnet-9-1', stub) == []
+    assert records('claude-sonnet-9-1') == rows

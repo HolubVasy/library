@@ -12,6 +12,8 @@ comment on table dict.country is 'Страны: name по-английски, к
 
 create table dict.organization (like dict.tech_step including all);
 alter table dict.organization add column country_id bigint references dict.country(id);
+alter table dict.organization drop constraint organization_name_key;   -- one name may stand for entities in several countries
+alter table dict.organization add unique nulls not distinct (name, country_id);
 comment on table dict.organization is 'Организации, как они записаны в документах, со страной.';
 
 create table career.record (
